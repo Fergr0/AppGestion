@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <!-- Barra de búsqueda-->
+    <SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:queryHint="Buscar restaurantes..."
+        android:iconifiedByDefault="false"
+        android:padding="8dp"
+        app:queryBackground="@android:color/white"
+        app:searchIcon="@android:drawable/ic_menu_search"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"/>
+
+    <!-- ListView para mostrar restaurantes -->
+    <ListView
+        android:id="@+id/lista"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Campo de nombre del restaurante -->
+        <EditText
+            android:id="@+id/edit_nombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre del restaurante"
+            android:inputType="textPersonName" />
+
+        <!-- Campo de descripción -->
+        <EditText
+            android:id="@+id/edit_descripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descripción"
+            android:inputType="textMultiLine"
+            android:minLines="3" />
+
+        <!-- Campo de dirección web -->
+        <EditText
+            android:id="@+id/edit_direccion_web"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dirección web"
+            android:inputType="textUri" />
+
+        <!-- Campo de teléfono -->
+        <EditText
+            android:id="@+id/edit_telefono"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Teléfono"
+            android:inputType="phone" />
+
+        <!-- Campo para la puntuación inicial -->
+        <RatingBar
+            android:id="@+id/edit_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="1.0"
+            android:rating="3" />
+
+        <!-- Botón para seleccionar imagen -->
+        <Button
+            android:id="@+id/btn_select_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar imagen" />
+
+        <!-- Vista previa de la imagen -->
+        <ImageView
+            android:id="@+id/image_preview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/restaurante1" />
+
+        <!-- Botón para guardar -->
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar Restaurante"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/edit_fecha_ultima_visita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Fecha de última visita"
+            android:focusable="false"
+            android:clickable="true"/>
+
+    </LinearLayout>
+</ScrollView>
