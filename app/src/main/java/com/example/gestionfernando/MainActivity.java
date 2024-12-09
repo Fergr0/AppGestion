@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +60,37 @@ public class MainActivity extends AppCompatActivity {
 
         // Registrar el ListView para el menú contextual
         registerForContextMenu(lista);
+
+        // Configuración del SearchView
+        SearchView searchView = findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Aquí puedes manejar cuando el usuario presiona Enter, pero no es necesario filtrar en este caso
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Filtrar la lista cuando el texto de búsqueda cambie
+                filterList(newText);
+                return false;
+            }
+        });
+    }
+
+    // Método para filtrar la lista según el texto introducido en el SearchView
+    private void filterList(String query) {
+        ArrayList<Restaurante> filteredList = new ArrayList<>();
+        for (Restaurante restaurante : restaurantes) {
+            if (restaurante.getNombre().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(restaurante);
+            }
+        }
+        // Actualizar la lista con los resultados filtrados
+        miAdaptador.clear();  // Limpiar la lista actual
+        miAdaptador.addAll(filteredList);  // Agregar los restaurantes filtrados
+        miAdaptador.notifyDataSetChanged();  // Notificar al adaptador para actualizar la vista
     }
 
     @Override
@@ -113,17 +145,25 @@ public class MainActivity extends AppCompatActivity {
 
         // Asegúrate de que el resultado sea OK y que los datos no sean nulos
         if (resultCode == RESULT_OK && data != null) {
-            // Obtener el restaurante actualizado desde el Intent
             Restaurante restauranteNuevo = (Restaurante) data.getSerializableExtra("restaurante");
 
             if (restauranteNuevo != null) {
-                // Agregar el nuevo restaurante a la lista
-                restaurantes.add(restauranteNuevo);  // Añadir el restaurante a la lista
-                miAdaptador.notifyDataSetChanged();  // Notificar al adaptador para actualizar la vista
-
-                // Mostrar un mensaje confirmando la adición
-                Toast.makeText(this, "Restaurante añadido", Toast.LENGTH_SHORT).show();
-            }else{
+                if (requestCode == 1) {  // Código para añadir un nuevo restaurante
+                    // Agregar el nuevo restaurante a la lista
+                    restaurantes.add(restauranteNuevo);
+                    miAdaptador.notifyDataSetChanged();
+                    Toast.makeText(this, "Restaurante añadido", Toast.LENGTH_SHORT).show();
+                } else if (requestCode == REQUEST_CODE_EDITAR) {  // Código para editar un restaurante existente
+                    // Obtener la posición del restaurante que fue editado
+                    int posicion = data.getIntExtra("posicion", -1);
+                    if (posicion != -1) {
+                        // Actualizar el restaurante en la lista
+                        restaurantes.set(posicion, restauranteNuevo);
+                        miAdaptador.notifyDataSetChanged();
+                        Toast.makeText(this, "Restaurante actualizado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else {
                 Log.d("MainActivity", "No se recibió ningún restaurante");
             }
         }
