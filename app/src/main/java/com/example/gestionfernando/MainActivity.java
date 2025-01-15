@@ -61,37 +61,8 @@ public class MainActivity extends AppCompatActivity {
         // Registrar el ListView para el menú contextual
         registerForContextMenu(lista);
 
-        // Configuración del SearchView
-        SearchView searchView = findViewById(R.id.search_view);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Aquí puedes manejar cuando el usuario presiona Enter, pero no es necesario filtrar en este caso
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                // Filtrar la lista cuando el texto de búsqueda cambie
-                filterList(newText);
-                return false;
-            }
-        });
     }
 
-    // Método para filtrar la lista según el texto introducido en el SearchView
-    private void filterList(String query) {
-        ArrayList<Restaurante> filteredList = new ArrayList<>();
-        for (Restaurante restaurante : restaurantes) {
-            if (restaurante.getNombre().toLowerCase().contains(query.toLowerCase())) {
-                filteredList.add(restaurante);
-            }
-        }
-        // Actualizar la lista con los resultados filtrados
-        miAdaptador.clear();  // Limpiar la lista actual
-        miAdaptador.addAll(filteredList);  // Agregar los restaurantes filtrados
-        miAdaptador.notifyDataSetChanged();  // Notificar al adaptador para actualizar la vista
-    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
