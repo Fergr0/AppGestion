@@ -1,0 +1,2 @@
+Bienvenido a la aplicación de gestión de restaurantes.
+Aquí puedes añadir, editar y eliminar restaurantes fácilmente.

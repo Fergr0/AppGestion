@@ -18,6 +18,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,6 +62,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Registrar el ListView para el menú contextual
         registerForContextMenu(lista);
+
+        // Configuración del botón flotante
+        FloatingActionButton btnInfo = findViewById(R.id.btnInfo);
+        btnInfo.setOnClickListener(v -> {
+            // Navegar a la actividad que muestra la información
+            Intent intent = new Intent(MainActivity.this, AcercaDeActivity.class);
+            startActivity(intent);
+        });
 
     }
 
