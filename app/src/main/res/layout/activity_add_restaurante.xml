@@ -66,6 +66,14 @@
             android:scaleType="centerCrop"
             android:src="@drawable/restaurante1" />
 
+        <EditText
+            android:id="@+id/edit_fecha_ultima_visita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Fecha de última visita"
+            android:focusable="false"
+            android:clickable="true"/>
+
         <!-- Botón para guardar -->
         <Button
             android:id="@+id/btn_save"
@@ -74,13 +82,7 @@
             android:text="Guardar Restaurante"
             android:layout_marginTop="16dp" />
 
-        <EditText
-            android:id="@+id/edit_fecha_ultima_visita"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Fecha de última visita"
-            android:focusable="false"
-            android:clickable="true"/>
+
 
     </LinearLayout>
 </ScrollView>

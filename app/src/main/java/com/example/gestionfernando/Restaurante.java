@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Restaurante implements Serializable {
+    private int id; // ID único para la base de datos
     private String nombre;
     private String descripcion;
     private int imagenUrl;
@@ -13,7 +14,20 @@ public class Restaurante implements Serializable {
     private float puntuacion;
     private Date fechaUltimaVisita;
 
+    // Constructor con ID
+    public Restaurante(int id, String nombre, String descripcion, int imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.imagenUrl = imagenUrl;
+        this.direccionWeb = direccionWeb;
+        this.telefono = telefono;
+        this.esFavorito = esFavorito;
+        this.puntuacion = puntuacion;
+        this.fechaUltimaVisita = fechaUltimaVisita;
+    }
 
+    // Constructor sin ID (para inserciones en la base de datos)
     public Restaurante(String nombre, String descripcion, int imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -25,14 +39,13 @@ public class Restaurante implements Serializable {
         this.fechaUltimaVisita = fechaUltimaVisita;
     }
 
-
-    // Getters y setters para la nueva propiedad
-    public Date getFechaUltimaVisita() {
-        return fechaUltimaVisita;
+    // Getters y Setters
+    public int getId() {
+        return id;
     }
 
-    public void setFechaUltimaVisita(Date fechaUltimaVisita) {
-        this.fechaUltimaVisita = fechaUltimaVisita;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -89,5 +102,13 @@ public class Restaurante implements Serializable {
 
     public void setPuntuacion(float puntuacion) {
         this.puntuacion = puntuacion;
+    }
+
+    public Date getFechaUltimaVisita() {
+        return fechaUltimaVisita;
+    }
+
+    public void setFechaUltimaVisita(Date fechaUltimaVisita) {
+        this.fechaUltimaVisita = fechaUltimaVisita;
     }
 }

@@ -24,14 +24,16 @@ public class AddRestauranteActivity extends AppCompatActivity {
     private ImageView imagePreview;
     private int selectedImage = R.drawable.restaurante1; // Imagen predeterminada
     private SimpleDateFormat dateFormat;
+    private DatabaseHelper databaseHelper; // Base de datos
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_restaurante);
 
-        // Inicializar el formato de fecha
+        // Inicializar el formato de fecha y la base de datos
         dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        databaseHelper = new DatabaseHelper(this);
 
         // Referencias a los elementos del diseño
         editNombre = findViewById(R.id.edit_nombre);
@@ -47,8 +49,7 @@ public class AddRestauranteActivity extends AppCompatActivity {
 
         // Listener para seleccionar una imagen
         btnSelectImage.setOnClickListener(v -> {
-            // Cambia a otra imagen si es necesario (puedes implementar un selector de imágenes más avanzado)
-            selectedImage = R.drawable.restaurante1; // Imagen predeterminada
+            selectedImage = R.drawable.restaurante1; // Cambiar imagen predeterminada
             imagePreview.setImageResource(selectedImage);
             Toast.makeText(this, "Imagen seleccionada", Toast.LENGTH_SHORT).show();
         });
@@ -63,7 +64,7 @@ public class AddRestauranteActivity extends AppCompatActivity {
             DatePickerDialog datePickerDialog = new DatePickerDialog(AddRestauranteActivity.this,
                     (view, year1, month1, dayOfMonth) -> {
                         String fecha = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month1 + 1, year1);
-                        editFechaUltimaVisita.setText(fecha); // Mostrar la fecha seleccionada
+                        editFechaUltimaVisita.setText(fecha);
                     }, year, month, day);
             datePickerDialog.show();
         });
@@ -89,24 +90,22 @@ public class AddRestauranteActivity extends AppCompatActivity {
                 return;
             }
 
-            // Intentar analizar la fecha
+            // Insertar en la base de datos
             try {
-                // Crear un Intent para devolver los datos a MainActivity
-                Intent resultIntent = new Intent();
                 Restaurante nuevoRestaurante = new Restaurante(
                         nombre,
                         descripcion,
                         selectedImage,
                         direccionWeb,
                         telefono,
-                        false, // Inicialmente no marcado como favorito
-                        Math.round(puntuacion), // Convertir a entero
+                        false, // Inicialmente no favorito
+                        puntuacion,
                         dateFormat.parse(fechaUltimaVisita) // Fecha como Date
                 );
 
-                resultIntent.putExtra("restaurante", nuevoRestaurante);
-                setResult(RESULT_OK, resultIntent);
-                finish(); // Finalizar la actividad
+                databaseHelper.insertarRestaurante(nuevoRestaurante); // Guardar en SQLite
+                Toast.makeText(this, "Restaurante añadido correctamente", Toast.LENGTH_SHORT).show();
+                finish(); // Finalizar actividad
 
             } catch (ParseException e) {
                 Toast.makeText(this, "Error al parsear la fecha", Toast.LENGTH_SHORT).show();
@@ -114,3 +113,4 @@ public class AddRestauranteActivity extends AppCompatActivity {
         });
     }
 }
+

@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,19 +19,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    public ListView lista;
+    ListView lista;
     private ArrayList<Restaurante> restaurantes;
     private MiApatador miAdaptador;
+    private DatabaseHelper databaseHelper;
 
-    // Constante para la solicitud de edición
     private static final int REQUEST_CODE_EDITAR = 2;
 
     @Override
@@ -40,44 +35,57 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Cambiar la configuración del formato de fecha para español
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", new Locale("es", "ES")); // Utilizando Locale en español
+        // Inicializar la base de datos
+        databaseHelper = new DatabaseHelper(this);
 
-        // Inicializar el ArrayList de restaurantes
-        restaurantes = new ArrayList<>();
-        try {
-            restaurantes.add(new Restaurante("Restaurante 1", "Este es el primer restaurante", R.drawable.restaurante1, "restau.com", "999 99 99 99", true, 1, sdf.parse("12 Mayo 2024")));
-            restaurantes.add(new Restaurante("Restaurante 2", "Este es el segundo restaurante", R.drawable.restaurante1, "restau2.com", "777 77 77 77", false, 2, sdf.parse("5 Junio 2024")));
-            restaurantes.add(new Restaurante("Restaurante 3", "Este es el tercer restaurante", R.drawable.restaurante1, "restau3.com", "123 45 67 89", true, 7, sdf.parse("21 Octubre 2024")));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        // Cargar los restaurantes desde la base de datos
+        restaurantes = databaseHelper.obtenerRestaurantes();
 
-        // Obtener el ListView desde el layout
+        // Configurar el ListView y el adaptador
         lista = findViewById(R.id.lista);
-
-        // Crear el adaptador para la lista, pasando el ArrayList convertido a array
         miAdaptador = new MiApatador(this, restaurantes);
         lista.setAdapter(miAdaptador);
 
-        // Registrar el ListView para el menú contextual
+        // Registrar el menú contextual
         registerForContextMenu(lista);
 
         // Configuración del botón flotante
         FloatingActionButton btnInfo = findViewById(R.id.btnInfo);
         btnInfo.setOnClickListener(v -> {
-            // Navegar a la actividad que muestra la información
             Intent intent = new Intent(MainActivity.this, AcercaDeActivity.class);
             startActivity(intent);
         });
-
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            Restaurante restauranteNuevo = (Restaurante) data.getSerializableExtra("restaurante");
+
+            if (restauranteNuevo != null) {
+                if (requestCode == 1) {  // Nuevo restaurante
+                    // Insertar el restaurante en la base de datos y actualizar la lista
+                    databaseHelper.insertarRestaurante(restauranteNuevo);
+                    restaurantes.add(restauranteNuevo);
+                } else if (requestCode == REQUEST_CODE_EDITAR) {  // Editar restaurante
+                    int posicion = data.getIntExtra("posicion", -1);
+                    if (posicion != -1) {
+                        // Actualizar el restaurante en la base de datos y en la lista
+                        databaseHelper.actualizarRestaurante(posicion, restauranteNuevo);
+                        restaurantes.set(posicion, restauranteNuevo);
+                    }
+                }
+                miAdaptador.notifyDataSetChanged();
+            }
+        }
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        getMenuInflater().inflate(R.menu.menu_contextual, menu); // Inflamos el menú
+        getMenuInflater().inflate(R.menu.menu_contextual, menu);
     }
 
     @Override
@@ -85,21 +93,21 @@ public class MainActivity extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         Restaurante restauranteSeleccionado = restaurantes.get(info.position);
 
-        // Acción para la opción de editar
         if (item.getItemId() == R.id.context_edit_restaurante) {
             Intent intent = new Intent(MainActivity.this, EditRestauranteActivity.class);
-            intent.putExtra("restaurante", restauranteSeleccionado); // Pasar el restaurante seleccionado
-            intent.putExtra("posicion", info.position); // Pasar la posición para actualizarla luego
-            startActivityForResult(intent, REQUEST_CODE_EDITAR); // Usar un requestCode diferente para edición
+            intent.putExtra("restaurante", restauranteSeleccionado); // Pasar el objeto restaurante
+            intent.putExtra("id", restauranteSeleccionado.getId()); // Asegúrate de que Restaurante tiene un ID
+            startActivityForResult(intent, REQUEST_CODE_EDITAR);
             return true;
-        }
-        // Acción para la opción de eliminar
-        else if (item.getItemId() == R.id.context_delete_restaurante) {
-            restauranteSeleccionado = restaurantes.get(info.position);
+        } else if (item.getItemId() == R.id.context_delete_restaurante) {
+            // Eliminar el restaurante de la base de datos usando su ID
+            databaseHelper.eliminarRestaurante(restauranteSeleccionado.getId());
+
+            // Eliminar el restaurante de la lista en memoria
             restaurantes.remove(info.position);
             miAdaptador.notifyDataSetChanged();
 
-            // Crear y mostrar el Toast personalizado
+            // Mostrar un Toast personalizado
             LayoutInflater inflater = getLayoutInflater();
             View layout = inflater.inflate(R.layout.toast_mio, findViewById(R.id.toast_root));
 
@@ -115,39 +123,9 @@ public class MainActivity extends AppCompatActivity {
             toast.show();
 
             return true;
-        } else {
-            return super.onContextItemSelected(item);
         }
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Asegúrate de que el resultado sea OK y que los datos no sean nulos
-        if (resultCode == RESULT_OK && data != null) {
-            Restaurante restauranteNuevo = (Restaurante) data.getSerializableExtra("restaurante");
-
-            if (restauranteNuevo != null) {
-                if (requestCode == 1) {  // Código para añadir un nuevo restaurante
-                    // Agregar el nuevo restaurante a la lista
-                    restaurantes.add(restauranteNuevo);
-                    miAdaptador.notifyDataSetChanged();
-                    Toast.makeText(this, "Restaurante añadido", Toast.LENGTH_SHORT).show();
-                } else if (requestCode == REQUEST_CODE_EDITAR) {  // Código para editar un restaurante existente
-                    // Obtener la posición del restaurante que fue editado
-                    int posicion = data.getIntExtra("posicion", -1);
-                    if (posicion != -1) {
-                        // Actualizar el restaurante en la lista
-                        restaurantes.set(posicion, restauranteNuevo);
-                        miAdaptador.notifyDataSetChanged();
-                        Toast.makeText(this, "Restaurante actualizado", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            } else {
-                Log.d("MainActivity", "No se recibió ningún restaurante");
-            }
-        }
+        return super.onContextItemSelected(item);
     }
 
 
@@ -166,4 +144,16 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Recargar los datos desde la base de datos
+        restaurantes.clear(); // Limpiar la lista actual
+        restaurantes.addAll(databaseHelper.obtenerRestaurantes()); // Añadir los nuevos datos
+        miAdaptador.notifyDataSetChanged(); // Notificar al adaptador que los datos han cambiado
+    }
+
+
 }
