@@ -2,7 +2,9 @@ package com.example.gestionfernando;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
@@ -22,9 +26,20 @@ public class AddRestauranteActivity extends AppCompatActivity {
     private EditText editNombre, editDescripcion, editDireccionWeb, editTelefono, editFechaUltimaVisita;
     private RatingBar editRating;
     private ImageView imagePreview;
-    private int selectedImage = R.drawable.restaurante1; // Imagen predeterminada
+    private String selectedImage; // Cambiado a String para admitir imágenes de galería
     private SimpleDateFormat dateFormat;
-    private DatabaseHelper databaseHelper; // Base de datos
+    private DatabaseHelper databaseHelper;
+
+    // Selector de imagen de la galería
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    selectedImage = imageUri.toString();
+                    imagePreview.setImageURI(imageUri);
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,29 +62,28 @@ public class AddRestauranteActivity extends AppCompatActivity {
         Button btnSelectImage = findViewById(R.id.btn_select_image);
         Button btnSave = findViewById(R.id.btn_save);
 
-        // Listener para seleccionar una imagen
+        // Imagen predeterminada
+        selectedImage = String.valueOf(R.drawable.restaurante1);
+        imagePreview.setImageResource(R.drawable.restaurante1);
+
+        // Seleccionar imagen desde la galería
         btnSelectImage.setOnClickListener(v -> {
-            selectedImage = R.drawable.restaurante1; // Cambiar imagen predeterminada
-            imagePreview.setImageResource(selectedImage);
-            Toast.makeText(this, "Imagen seleccionada", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
         });
 
-        // Listener para seleccionar la fecha de última visita
+        // Seleccionar la fecha de última visita
         editFechaUltimaVisita.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
-            int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-
             DatePickerDialog datePickerDialog = new DatePickerDialog(AddRestauranteActivity.this,
-                    (view, year1, month1, dayOfMonth) -> {
-                        String fecha = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month1 + 1, year1);
+                    (view, year, month, dayOfMonth) -> {
+                        String fecha = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                         editFechaUltimaVisita.setText(fecha);
-                    }, year, month, day);
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
             datePickerDialog.show();
         });
 
-        // Listener para guardar el restaurante
+        // Guardar el restaurante
         btnSave.setOnClickListener(v -> {
             String nombre = editNombre.getText().toString().trim();
             String descripcion = editDescripcion.getText().toString().trim();
@@ -95,17 +109,17 @@ public class AddRestauranteActivity extends AppCompatActivity {
                 Restaurante nuevoRestaurante = new Restaurante(
                         nombre,
                         descripcion,
-                        selectedImage,
+                        selectedImage, // Ahora es String, admite imágenes de galería o recursos
                         direccionWeb,
                         telefono,
                         false, // Inicialmente no favorito
                         puntuacion,
-                        dateFormat.parse(fechaUltimaVisita) // Fecha como Date
+                        dateFormat.parse(fechaUltimaVisita)
                 );
 
-                databaseHelper.insertarRestaurante(nuevoRestaurante); // Guardar en SQLite
+                databaseHelper.insertarRestaurante(nuevoRestaurante);
                 Toast.makeText(this, "Restaurante añadido correctamente", Toast.LENGTH_SHORT).show();
-                finish(); // Finalizar actividad
+                finish();
 
             } catch (ParseException e) {
                 Toast.makeText(this, "Error al parsear la fecha", Toast.LENGTH_SHORT).show();
@@ -113,4 +127,3 @@ public class AddRestauranteActivity extends AppCompatActivity {
         });
     }
 }
-

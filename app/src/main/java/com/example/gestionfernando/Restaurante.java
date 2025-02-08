@@ -7,7 +7,7 @@ public class Restaurante implements Serializable {
     private int id; // ID único para la base de datos
     private String nombre;
     private String descripcion;
-    private int imagenUrl;
+    private String imagenUrl; // Cambiado de int a String
     private String direccionWeb;
     private String telefono;
     private boolean esFavorito;
@@ -15,7 +15,7 @@ public class Restaurante implements Serializable {
     private Date fechaUltimaVisita;
 
     // Constructor con ID
-    public Restaurante(int id, String nombre, String descripcion, int imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
+    public Restaurante(int id, String nombre, String descripcion, String imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -28,7 +28,7 @@ public class Restaurante implements Serializable {
     }
 
     // Constructor sin ID (para inserciones en la base de datos)
-    public Restaurante(String nombre, String descripcion, int imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
+    public Restaurante(String nombre, String descripcion, String imagenUrl, String direccionWeb, String telefono, boolean esFavorito, float puntuacion, Date fechaUltimaVisita) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.imagenUrl = imagenUrl;
@@ -64,11 +64,11 @@ public class Restaurante implements Serializable {
         this.descripcion = descripcion;
     }
 
-    public int getImagenUrl() {
+    public String getImagenUrl() {
         return imagenUrl;
     }
 
-    public void setImagenUrl(int imagenUrl) {
+    public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
     }
 

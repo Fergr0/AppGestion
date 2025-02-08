@@ -2,6 +2,7 @@ package com.example.gestionfernando;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +21,7 @@ public class Login extends AppCompatActivity {
 
     private List<Usuario> listaUsuarios;
     private EditText usernameField;
+    private MediaPlayer mediaPlayer; // Para reproducir la música
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,11 @@ public class Login extends AppCompatActivity {
             usernameField.setText(lastUsername);
         }
 
+        // **Reproducir música de fondo**
+        mediaPlayer = MediaPlayer.create(this, R.raw.musica_inicio);
+        mediaPlayer.setLooping(true); // Para que se repita
+        mediaPlayer.start(); // Iniciar la música
+
         // Acción del botón
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,6 +65,13 @@ public class Login extends AppCompatActivity {
                     editor.putString(KEY_LAST_USERNAME, username);
                     editor.apply();
 
+                    // **Detener la música antes de cambiar de pantalla**
+                    if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                        mediaPlayer.stop();
+                        mediaPlayer.release();
+                        mediaPlayer = null;
+                    }
+
                     // Si es válido, avanzar a la siguiente pantalla
                     Intent intent = new Intent(Login.this, MainActivity.class);
                     startActivity(intent);
@@ -68,6 +82,16 @@ public class Login extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // **Liberar el reproductor de música al cerrar la actividad**
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 
     // Método para validar el usuario

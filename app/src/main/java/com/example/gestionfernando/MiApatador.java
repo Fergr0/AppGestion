@@ -1,6 +1,7 @@
 package com.example.gestionfernando;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import android.widget.ArrayAdapter;
@@ -33,7 +35,6 @@ public class MiApatador extends ArrayAdapter<Restaurante> {
     public View getView(int posicion, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
 
-        // Usa un ViewHolder para optimizar la lista
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
             convertView = inflater.inflate(R.layout.restaurante, parent, false);
@@ -47,45 +48,56 @@ public class MiApatador extends ArrayAdapter<Restaurante> {
             viewHolder.radio = convertView.findViewById(R.id.radio);
             viewHolder.barra = convertView.findViewById(R.id.barra);
             viewHolder.btnMenuContextual = convertView.findViewById(R.id.btnMenuContextual);
-            viewHolder.fechaUltimaVisita = convertView.findViewById(R.id.edit_fecha_ultima_visita); // Nueva referencia
+            viewHolder.fechaUltimaVisita = convertView.findViewById(R.id.edit_fecha_ultima_visita);
 
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        // Obtén el restaurante actual
         Restaurante restauranteActual = restaurantes.get(posicion);
 
-        // Asignar valores a las vistas
         viewHolder.nombre.setText(restauranteActual.getNombre());
         viewHolder.descripcion.setText(restauranteActual.getDescripcion());
-        viewHolder.imagen.setImageResource(restauranteActual.getImagenUrl());
         viewHolder.direccionWeb.setText(restauranteActual.getDireccionWeb());
         viewHolder.telefono.setText(restauranteActual.getTelefono());
         viewHolder.radio.setChecked(restauranteActual.isEsFavorito());
         viewHolder.barra.setRating(restauranteActual.getPuntuacion());
 
-        // Formatear la fecha de última visita
+        // **Manejo correcto de la imagen (Recurso o Ruta)**
+        String imagenUrl = restauranteActual.getImagenUrl();
+        if (imagenUrl != null) {
+            if (imagenUrl.matches("\\d+")) { // Si es un número, es un recurso
+                viewHolder.imagen.setImageResource(Integer.parseInt(imagenUrl));
+            } else { // Si es una ruta, carga desde el almacenamiento
+                viewHolder.imagen.setImageURI(Uri.parse(imagenUrl));
+            }
+        } else {
+            viewHolder.imagen.setImageResource(R.drawable.placeholder_image); // Imagen por defecto
+        }
+
+        // **Formato de fecha**
         if (restauranteActual.getFechaUltimaVisita() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()); // Formato de fecha
-            String fechaFormateada = sdf.format(restauranteActual.getFechaUltimaVisita());
-            viewHolder.fechaUltimaVisita.setText(fechaFormateada);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+            viewHolder.fechaUltimaVisita.setText(sdf.format(restauranteActual.getFechaUltimaVisita()));
         } else {
             viewHolder.fechaUltimaVisita.setText("Fecha no disponible");
         }
 
-        // Configurar el botón para abrir el menú contextual
+        // **Configuración del botón de menú contextual**
         viewHolder.btnMenuContextual.setOnClickListener(v -> {
-            // Llamar al menú contextual desde el botón
-            v.setTag(posicion); // Asignar la posición del restaurante como tag
-            ((MainActivity) context).lista.showContextMenuForChild(v); // Mostrar el menú contextual
+            if (context instanceof MainActivity) {
+                v.setTag(posicion);
+                ((MainActivity) context).lista.showContextMenuForChild(v);
+            } else {
+                Toast.makeText(context, "Error al abrir el menú", Toast.LENGTH_SHORT).show();
+            }
         });
 
         return convertView;
     }
 
-    // Clase ViewHolder para optimización
+    // **ViewHolder para mejorar rendimiento**
     static class ViewHolder {
         TextView nombre;
         TextView descripcion;
@@ -94,7 +106,7 @@ public class MiApatador extends ArrayAdapter<Restaurante> {
         TextView telefono;
         RadioButton radio;
         RatingBar barra;
-        TextView fechaUltimaVisita; // Nueva vista para la fecha
+        TextView fechaUltimaVisita;
         Button btnMenuContextual;
     }
 }

@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permisos para usar la cámara y escribir en almacenamiento externo -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
         tools:targetApi="31">
+
+        <!-- Definición de actividades -->
         <activity
             android:name=".AddRestauranteActivity"
             android:exported="false" />
@@ -23,14 +31,27 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true" />
-        <activity android:name=".AcercaDeActivity" />
+        <activity
+            android:name=".AcercaDeActivity"
+            android:exported="false" />
+
+        <!-- Configuración de FileProvider para manejar archivos de imagen -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.gestionfernando.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
+
     </application>
 
 </manifest>

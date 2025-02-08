@@ -9,6 +9,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <Button
+            android:id="@+id/btnTomarFoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tomar Foto"
+            android:layout_marginTop="8dp"/>
+
+
         <!-- EditText para el nombre del restaurante -->
         <EditText
             android:id="@+id/editNombre"

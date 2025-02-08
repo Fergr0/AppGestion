@@ -14,14 +14,14 @@ import java.util.Locale;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "restaurantes.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // ¡Aumenta la versión para activar onUpgrade()!
 
     // Nombre de la tabla y columnas
     private static final String TABLE_RESTAURANTES = "restaurantes";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NOMBRE = "nombre";
     private static final String COLUMN_DESCRIPCION = "descripcion";
-    private static final String COLUMN_IMAGEN = "imagen";
+    private static final String COLUMN_IMAGEN = "imagen"; // Ahora es STRING
     private static final String COLUMN_DIRECCION_WEB = "direccion_web";
     private static final String COLUMN_TELEFONO = "telefono";
     private static final String COLUMN_ES_FAVORITO = "es_favorito";
@@ -34,12 +34,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Crear tabla restaurantes
+        // Crear tabla con COLUMN_IMAGEN como TEXT
         String CREATE_TABLE = "CREATE TABLE " + TABLE_RESTAURANTES + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_NOMBRE + " TEXT,"
                 + COLUMN_DESCRIPCION + " TEXT,"
-                + COLUMN_IMAGEN + " INTEGER,"
+                + COLUMN_IMAGEN + " TEXT," // Cambiado de INTEGER a TEXT
                 + COLUMN_DIRECCION_WEB + " TEXT,"
                 + COLUMN_TELEFONO + " TEXT,"
                 + COLUMN_ES_FAVORITO + " INTEGER,"
@@ -51,10 +51,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Elimina la tabla anterior si existe y vuelve a crearla
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RESTAURANTES);
-        onCreate(db);
+        if (oldVersion < 2) {
+            // Verificar si la columna ya existe antes de intentar agregarla
+            if (!columnExists(db, TABLE_RESTAURANTES, COLUMN_IMAGEN)) {
+                db.execSQL("ALTER TABLE " + TABLE_RESTAURANTES + " ADD COLUMN " + COLUMN_IMAGEN + " TEXT;");
+            }
+        }
     }
+
+    /**
+     * Metodo para verificar si una columna ya existe en la base de datos.
+     */
+    private boolean columnExists(SQLiteDatabase db, String tableName, String columnName) {
+        boolean exists = false;
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+            int nameIndex = cursor.getColumnIndex("name");
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(nameIndex);
+                if (name.equals(columnName)) {
+                    exists = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return exists;
+    }
+
 
     // Insertar restaurante
     public void insertarRestaurante(Restaurante restaurante) {
@@ -62,7 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOMBRE, restaurante.getNombre());
         values.put(COLUMN_DESCRIPCION, restaurante.getDescripcion());
-        values.put(COLUMN_IMAGEN, restaurante.getImagenUrl());
+        values.put(COLUMN_IMAGEN, restaurante.getImagenUrl()); // Ahora almacena como STRING
         values.put(COLUMN_DIRECCION_WEB, restaurante.getDireccionWeb());
         values.put(COLUMN_TELEFONO, restaurante.getTelefono());
         values.put(COLUMN_ES_FAVORITO, restaurante.isEsFavorito() ? 1 : 0);
@@ -92,19 +122,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         fecha = dateFormat.parse(fechaTexto);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace(); // Manejar el error de conversión
+                    e.printStackTrace();
                 }
 
                 Restaurante restaurante = new Restaurante(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)), // Asignar el ID único
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOMBRE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPCION)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN)), // Ahora es String
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DIRECCION_WEB)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TELEFONO)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ES_FAVORITO)) == 1,
                         cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PUNTUACION)),
-                        fecha // Fecha convertida a Date
+                        fecha
                 );
 
                 lista.add(restaurante);
@@ -127,10 +157,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        // Insertar los nuevos valores
         values.put(COLUMN_NOMBRE, restaurante.getNombre());
         values.put(COLUMN_DESCRIPCION, restaurante.getDescripcion());
-        values.put(COLUMN_IMAGEN, restaurante.getImagenUrl());
+        values.put(COLUMN_IMAGEN, restaurante.getImagenUrl()); // Ahora almacena como STRING
         values.put(COLUMN_DIRECCION_WEB, restaurante.getDireccionWeb());
         values.put(COLUMN_TELEFONO, restaurante.getTelefono());
         values.put(COLUMN_ES_FAVORITO, restaurante.isEsFavorito() ? 1 : 0);
